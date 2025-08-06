@@ -19,12 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const wordList2El = document.getElementById('word-list2');
     const speakButtons = document.querySelectorAll('.speak-btn');
     const saveBtn = document.getElementById('save-btn');
-    const printBtn = document.getElementById('print-btn');
+    const photoBtn = document.getElementById('photo-btn');
     const endBtn = document.getElementById('end-btn');
 
     // Check if buttons exist and add error handling
-    if (!printBtn) {
-        console.error('Print button not found!');
+    if (!photoBtn) {
+        console.error('Photo button not found!');
     }
     if (!endBtn) {
         console.error('End button not found!');
@@ -76,14 +76,14 @@ document.addEventListener('DOMContentLoaded', () => {
         saveBtn.addEventListener('click', saveResults);
     }
     
-    if (printBtn) {
-        printBtn.addEventListener('click', () => {
-            console.log('Print button clicked');
+    if (photoBtn) {
+        photoBtn.addEventListener('click', () => {
+            console.log('Photo button clicked');
             try {
-                printResults();
+                takePhoto();
             } catch (error) {
-                console.error('Print error:', error);
-                alert('Print functionality failed. Please try again.');
+                console.error('Photo error:', error);
+                alert('Photo functionality failed. Please try again.');
             }
         });
     }
@@ -228,10 +228,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const teamData = (teamNumber === '1') ? team1 : team2;
         const scoreEl = (teamNumber === '1') ? score1El : score2El;
         const wordListEl = (teamNumber === '1') ? wordList1El : wordList2El;
+        const button = document.querySelector(`.speak-btn[data-team="${teamNumber}"]`);
 
         // Strict validation: word must start with the exact letter
         if (!word.startsWith(teamData.letter)) {
             showRejectionMessage(teamNumber, word, `શબ્દ "${word}" એ "${teamData.letter}" થી શરૂ થતો નથી`);
+            blockButton(teamNumber, 3000); // Block button for 3 seconds
             return;
         }
 
@@ -245,6 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
             li.classList.add('repeated-word');
             li.innerHTML = `${word} <span style="color: red; font-size: 0.8em;">(જૂનું)</span>`;
             showRepeatedWordMessage(teamNumber, word);
+            blockButton(teamNumber, 2000); // Block button for 2 seconds for repeated words
         } else {
             // It's a new word
             teamData.score++;
@@ -265,6 +268,106 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             switchTurn();
         }, 1500);
+    }
+    
+    function blockButton(teamNumber, duration) {
+        const button = document.querySelector(`.speak-btn[data-team="${teamNumber}"]`);
+        if (!button) return;
+        
+        // Store original button state
+        const originalText = button.textContent;
+        const originalDisabled = button.disabled;
+        const originalOpacity = button.style.opacity;
+        const originalCursor = button.style.cursor;
+        
+        // Block the button
+        button.disabled = true;
+        button.style.opacity = '0.5';
+        button.style.cursor = 'not-allowed';
+        
+        // Show blocking message
+        showButtonBlockedMessage(teamNumber, duration);
+        
+        // Start countdown timer
+        let timeLeft = Math.ceil(duration / 1000);
+        const countdownInterval = setInterval(() => {
+            if (button && timeLeft > 0) {
+                button.textContent = `બ્લોક કરેલું (${timeLeft}s)`;
+                timeLeft--;
+            } else {
+                clearInterval(countdownInterval);
+                if (button) {
+                    // Only restore if it's still this team's turn
+                    if (parseInt(teamNumber) === currentTurn && !isListening) {
+                        button.disabled = false;
+                        button.style.opacity = '1';
+                        button.style.cursor = 'pointer';
+                        button.textContent = 'શબ્દ બોલો';
+                    } else {
+                        // If it's not their turn, keep it disabled but restore text
+                        button.disabled = true;
+                        button.style.opacity = '0.5';
+                        button.style.cursor = 'not-allowed';
+                        button.textContent = 'શબ્દ બોલો';
+                    }
+                }
+            }
+        }, 1000);
+        
+        // Initial countdown display
+        button.textContent = `બ્લોક કરેલું (${timeLeft}s)`;
+    }
+    
+    function showButtonBlockedMessage(teamNumber, duration) {
+        const message = document.createElement('div');
+        message.className = 'button-blocked-message';
+        
+        // Determine the reason for blocking
+        let reason = '';
+        if (duration === 3000) {
+            reason = 'અયોગ્ય શબ્દ બોલવાને કારણે';
+        } else if (duration === 2000) {
+            reason = 'જૂનો શબ્દ બોલવાને કારણે';
+        }
+        
+        message.innerHTML = `
+            <div class="message-content">
+                <div class="block-icon">🚫</div>
+                <div class="message-text">
+                    <div class="block-title">બટન બ્લોક કરેલું!</div>
+                    <div class="block-subtitle">ટીમ ${teamNumber} નો બટન ${duration/1000} સેકન્ડ માટે બ્લોક કરેલું છે</div>
+                    <div class="block-reason">${reason}</div>
+                </div>
+            </div>
+        `;
+        
+        message.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+            animation: buttonBlockedIn 0.5s ease-out;
+            font-weight: bold;
+            font-size: 14px;
+            max-width: 300px;
+        `;
+        
+        document.body.appendChild(message);
+        
+        // Auto-remove after duration
+        setTimeout(() => {
+            message.style.animation = 'buttonBlockedOut 0.5s ease-in';
+            setTimeout(() => {
+                if (document.body.contains(message)) {
+                    document.body.removeChild(message);
+                }
+            }, 500);
+        }, duration);
     }
     
     function updateWordCount(teamNumber) {
@@ -681,15 +784,24 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(statsMessage);
     }
 
-    function printResults() {
+    function takePhoto() {
         try {
-            // Create a new window for printing
-            const printWindow = window.open('', '_blank');
-            
-            if (!printWindow) {
-                alert('પોપ-અપ બ્લોક કરેલું છે. કૃપા કરી પોપ-અપને મંજૂરી આપો અને ફરીથી પ્રયાસ કરો.');
-                return;
-            }
+            // Create a modal overlay for the photo
+            const photoModal = document.createElement('div');
+            photoModal.className = 'photo-modal';
+            photoModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                animation: photoModalIn 0.3s ease-out;
+            `;
             
             // Determine winner for styling
             let winner = '';
@@ -703,173 +815,23 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 winner = 'બંને ટીમ';
             }
-        
-        // Create table content for both teams
-        let team1WordsHtml = '';
-        team1.words.forEach((word, index) => {
-            team1WordsHtml += `<tr><td>${index + 1}</td><td>${word}</td></tr>`;
-        });
-        
-        let team2WordsHtml = '';
-        team2.words.forEach((word, index) => {
-            team2WordsHtml += `<tr><td>${index + 1}</td><td>${word}</td></tr>`;
-        });
-        
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html lang="gu">
-            <head>
-                <meta charset="UTF-8">
-                <title>શબ્દ સ્પર્ધા - પરિણામ</title>
-                <style>
-                    body { 
-                        font-family: 'Arial', sans-serif; 
-                        padding: 20px; 
-                        margin: 0;
-                        background-color: white;
-                    }
-                    .header {
-                        text-align: center;
-                        margin-bottom: 30px;
-                        padding: 20px;
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        color: white;
-                        border-radius: 10px;
-                    }
-                    .school-name {
-                        font-size: 24px;
-                        font-weight: bold;
-                        margin-bottom: 5px;
-                    }
-                    .school-location {
-                        font-size: 16px;
-                        opacity: 0.9;
-                    }
-                    h1 { 
-                        color: #333; 
-                        text-align: center; 
-                        margin: 20px 0;
-                        font-size: 28px;
-                    }
-                    .results-summary {
-                        display: flex;
-                        justify-content: space-around;
-                        margin-bottom: 30px;
-                        background: #f8f9fa;
-                        padding: 20px;
-                        border-radius: 10px;
-                        border: 2px solid #e9ecef;
-                    }
-                    .team-summary {
-                        text-align: center;
-                        padding: 15px;
-                        border-radius: 8px;
-                        min-width: 200px;
-                    }
-                    .team1-summary {
-                        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-                        color: white;
-                    }
-                    .team2-summary {
-                        background: linear-gradient(135deg, #48dbfb, #6ee7ff);
-                        color: white;
-                    }
-                    .team-letter {
-                        font-size: 24px;
-                        font-weight: bold;
-                        margin-bottom: 10px;
-                    }
-                    .team-score {
-                        font-size: 32px;
-                        font-weight: bold;
-                        margin-bottom: 5px;
-                    }
-                    .team-word-count {
-                        font-size: 14px;
-                        opacity: 0.9;
-                    }
-                    .winner-section {
-                        text-align: center;
-                        margin: 20px 0;
-                        padding: 20px;
-                        background: linear-gradient(135deg, ${winnerColor}, ${winnerColor}dd);
-                        color: white;
-                        border-radius: 10px;
-                        font-size: 20px;
-                        font-weight: bold;
-                    }
-                    .tables-container {
-                        display: flex;
-                        gap: 30px;
-                        margin-top: 30px;
-                    }
-                    .team-table-section {
-                        flex: 1;
-                    }
-                    .team-table-title {
-                        text-align: center;
-                        font-size: 20px;
-                        font-weight: bold;
-                        margin-bottom: 15px;
-                        padding: 10px;
-                        border-radius: 5px;
-                    }
-                    .team1-title {
-                        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-                        color: white;
-                    }
-                    .team2-title {
-                        background: linear-gradient(135deg, #48dbfb, #6ee7ff);
-                        color: white;
-                    }
-                    table { 
-                        border-collapse: collapse; 
-                        width: 100%; 
-                        margin-bottom: 20px;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                    }
-                    th, td { 
-                        border: 1px solid #ddd; 
-                        padding: 12px 8px; 
-                        text-align: left; 
-                    }
-                    th { 
-                        background-color: #f2f2f2; 
-                        color: #333;
-                        font-weight: bold;
-                        text-align: center;
-                    }
-                    tr:nth-child(even) { 
-                        background-color: #f9f9f9; 
-                    }
-                    tr:hover {
-                        background-color: #f0f0f0;
-                    }
-                    .no-words {
-                        text-align: center;
-                        color: #666;
-                        font-style: italic;
-                        padding: 20px;
-                    }
-                    .footer {
-                        margin-top: 30px;
-                        text-align: center;
-                        padding: 15px;
-                        background: #f8f9fa;
-                        border-radius: 5px;
-                        font-size: 12px;
-                        color: #666;
-                    }
-                    @media print {
-                        body { margin: 0; }
-                        .header, .results-summary, .winner-section, .tables-container { 
-                            page-break-inside: avoid; 
-                        }
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="header">
+            
+            // Create table content for both teams
+            let team1WordsHtml = '';
+            team1.words.forEach((word, index) => {
+                team1WordsHtml += `<tr><td>${index + 1}</td><td>${word}</td></tr>`;
+            });
+            
+            let team2WordsHtml = '';
+            team2.words.forEach((word, index) => {
+                team2WordsHtml += `<tr><td>${index + 1}</td><td>${word}</td></tr>`;
+            });
+            
+            // Create the photo content
+            const photoContent = document.createElement('div');
+            photoContent.className = 'photo-content';
+            photoContent.innerHTML = `
+                <div class="photo-header">
                     <div class="school-name">જડિયાણા પ્રાથમિક શાળા</div>
                     <div class="school-location">તા/જી - છોટાઉદેપુર</div>
                 </div>
@@ -925,25 +887,77 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 
-                <div class="footer">
+                <div class="photo-footer">
                     <p>શબ્દ સ્પર્ધા પરિણામ - તારીખ: ${new Date().toLocaleDateString('gu-IN')}</p>
                     <p>By - દેવ પટેલ | Mo - 6354236105</p>
                 </div>
-            </body>
-            </html>
-        `);
-        
-        printWindow.document.close();
-        printWindow.focus();
-        
-        // Wait a bit for content to load, then print
-        setTimeout(() => {
-            printWindow.print();
-            printWindow.close();
-        }, 500);
+                
+                <div class="photo-controls">
+                    <button class="download-btn" onclick="downloadPhoto()">📥 ડાઉનલોડ કરો</button>
+                    <button class="close-btn" onclick="closePhotoModal()">❌ બંધ કરો</button>
+                </div>
+            `;
+            
+            photoContent.style.cssText = `
+                background: white;
+                padding: 30px;
+                border-radius: 15px;
+                max-width: 90%;
+                max-height: 90%;
+                overflow-y: auto;
+                position: relative;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                animation: photoContentIn 0.5s ease-out;
+            `;
+            
+            photoModal.appendChild(photoContent);
+            document.body.appendChild(photoModal);
+            
+            // Add global functions for the buttons
+            window.downloadPhoto = function() {
+                html2canvas(photoContent, {
+                    backgroundColor: 'white',
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = `shabd-spardha-result-${new Date().toISOString().slice(0,10)}.png`;
+                    link.href = canvas.toDataURL();
+                    link.click();
+                }).catch(error => {
+                    console.error('Photo download error:', error);
+                    alert('ફોટો ડાઉનલોડ કરવામાં ભૂલ આવી. કૃપા કરી ફરીથી પ્રયાસ કરો.');
+                });
+            };
+            
+            window.closePhotoModal = function() {
+                photoModal.style.animation = 'photoModalOut 0.3s ease-in';
+                setTimeout(() => {
+                    if (document.body.contains(photoModal)) {
+                        document.body.removeChild(photoModal);
+                    }
+                }, 300);
+            };
+            
+            // Close modal on background click
+            photoModal.addEventListener('click', (e) => {
+                if (e.target === photoModal) {
+                    window.closePhotoModal();
+                }
+            });
+            
+            // Close modal on Escape key
+            document.addEventListener('keydown', function closeOnEscape(e) {
+                if (e.key === 'Escape') {
+                    window.closePhotoModal();
+                    document.removeEventListener('keydown', closeOnEscape);
+                }
+            });
+            
         } catch (error) {
-            console.error('Print error:', error);
-            alert('પ્રિન્ટ કરવામાં ભૂલ આવી. કૃપા કરી ફરીથી પ્રયાસ કરો.');
+            console.error('Photo error:', error);
+            alert('ફોટો બનાવવામાં ભૂલ આવી. કૃપા કરી ફરીથી પ્રયાસ કરો.');
         }
     }
 
@@ -952,12 +966,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Add visual feedback to confirm buttons are loaded
     console.log('DOM loaded successfully');
-    console.log('Print button found:', !!printBtn);
+    console.log('Photo button found:', !!photoBtn);
     console.log('End button found:', !!endBtn);
     
     // Add a simple test to verify buttons are clickable
-    if (printBtn) {
-        printBtn.style.border = '2px solid #28a745';
+    if (photoBtn) {
+        photoBtn.style.border = '2px solid #28a745';
     }
     if (endBtn) {
         endBtn.style.border = '2px solid #dc3545';

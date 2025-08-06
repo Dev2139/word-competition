@@ -69,6 +69,22 @@ h1 {
     background-color: #218838;
 }
 
+/* Blocked button styling */
+.speak-btn:disabled {
+    background-color: #6c757d !important;
+    color: #fff !important;
+    cursor: not-allowed !important;
+    opacity: 0.5 !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.speak-btn:disabled:hover {
+    background-color: #6c757d !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
 .controls {
     margin-top: 30px;
     border-top: 1px solid #eee;
@@ -379,6 +395,291 @@ li:hover {
         transform: translate(-50%, -50%) scale(0.3);
         opacity: 0;
     }
+}
+
+/* Button blocked message animations */
+@keyframes buttonBlockedIn {
+    0% {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes buttonBlockedOut {
+    0% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Button blocked message styling */
+.button-blocked-message .block-reason {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.button-blocked-message .message-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.button-blocked-message .block-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.button-blocked-message .message-text {
+    flex: 1;
+}
+
+.button-blocked-message .block-title {
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.button-blocked-message .block-subtitle {
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+/* Photo modal animations */
+@keyframes photoModalIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes photoModalOut {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes photoContentIn {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Photo content styling */
+.photo-content {
+    font-family: 'Arial', sans-serif;
+}
+
+.photo-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+}
+
+.photo-header .school-name {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.photo-header .school-location {
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.photo-content h1 {
+    color: #333;
+    text-align: center;
+    margin: 20px 0;
+    font-size: 28px;
+}
+
+.photo-content .results-summary {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 30px;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+}
+
+.photo-content .team-summary {
+    text-align: center;
+    padding: 15px;
+    border-radius: 8px;
+    min-width: 200px;
+}
+
+.photo-content .team1-summary {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+    color: white;
+}
+
+.photo-content .team2-summary {
+    background: linear-gradient(135deg, #48dbfb, #6ee7ff);
+    color: white;
+}
+
+.photo-content .team-letter {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.photo-content .team-score {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.photo-content .team-word-count {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.photo-content .winner-section {
+    text-align: center;
+    margin: 20px 0;
+    padding: 20px;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.photo-content .tables-container {
+    display: flex;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.photo-content .team-table-section {
+    flex: 1;
+}
+
+.photo-content .team-table-title {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.photo-content .team1-title {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+    color: white;
+}
+
+.photo-content .team2-title {
+    background: linear-gradient(135deg, #48dbfb, #6ee7ff);
+    color: white;
+}
+
+.photo-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.photo-content th, .photo-content td {
+    border: 1px solid #ddd;
+    padding: 12px 8px;
+    text-align: left;
+}
+
+.photo-content th {
+    background-color: #f2f2f2;
+    color: #333;
+    font-weight: bold;
+    text-align: center;
+}
+
+.photo-content tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.photo-content .no-words {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 20px;
+}
+
+.photo-footer {
+    margin-top: 30px;
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    font-size: 12px;
+    color: #666;
+}
+
+.photo-controls {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 15px 0;
+    margin-top: 20px;
+    border-top: 2px solid #e9ecef;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.photo-controls button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.photo-controls .download-btn {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+}
+
+.photo-controls .download-btn:hover {
+    background: linear-gradient(135deg, #218838, #1e7e34);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.photo-controls .close-btn {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+}
+
+.photo-controls .close-btn:hover {
+    background: linear-gradient(135deg, #c82333, #bd2130);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
 }
 
 /* Hide buttons when printing */
