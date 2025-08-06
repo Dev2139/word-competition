@@ -234,6 +234,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!word.startsWith(teamData.letter)) {
             showRejectionMessage(teamNumber, word, `શબ્દ "${word}" એ "${teamData.letter}" થી શરૂ થતો નથી`);
             blockButton(teamNumber, 3000); // Block button for 3 seconds
+            // Switch turn immediately for invalid word
+            setTimeout(() => {
+                switchTurn();
+            }, 1500);
             return;
         }
 
@@ -248,26 +252,30 @@ document.addEventListener('DOMContentLoaded', () => {
             li.innerHTML = `${word} <span style="color: red; font-size: 0.8em;">(જૂનું)</span>`;
             showRepeatedWordMessage(teamNumber, word);
             blockButton(teamNumber, 2000); // Block button for 2 seconds for repeated words
+            // Switch turn immediately for repeated word
+            setTimeout(() => {
+                switchTurn();
+            }, 1500);
         } else {
             // It's a new word
             teamData.score++;
             teamData.words.push(word);
             li.innerHTML = `${word} <span style="color: green; font-size: 0.8em;">(નવું)</span>`;
             showWordAcceptedMessage(teamNumber, word);
+            
+            // Update UI
+            scoreEl.textContent = teamData.score;
+            wordListEl.appendChild(li);
+            wordListEl.scrollTop = wordListEl.scrollHeight; // Auto-scroll to the bottom
+            
+            // Update word count display
+            updateWordCount(teamNumber);
+            
+            // Switch turn after processing the word
+            setTimeout(() => {
+                switchTurn();
+            }, 1500);
         }
-
-        // Update UI
-        scoreEl.textContent = teamData.score;
-        wordListEl.appendChild(li);
-        wordListEl.scrollTop = wordListEl.scrollHeight; // Auto-scroll to the bottom
-        
-        // Update word count display
-        updateWordCount(teamNumber);
-        
-        // Switch turn after processing the word
-        setTimeout(() => {
-            switchTurn();
-        }, 1500);
     }
     
     function blockButton(teamNumber, duration) {
@@ -836,60 +844,62 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="school-location">તા/જી - છોટાઉદેપુર</div>
                 </div>
                 
-                <h1>શબ્દ સ્પર્ધા - પરિણામ</h1>
-                
-                <div class="results-summary">
-                    <div class="team-summary team1-summary">
-                        <div class="team-letter">ટીમ 1 (${team1.letter})</div>
-                        <div class="team-score">${team1.score}</div>
-                        <div class="team-word-count">${team1.words.length} શબ્દો</div>
-                    </div>
-                    <div class="team-summary team2-summary">
-                        <div class="team-letter">ટીમ 2 (${team2.letter})</div>
-                        <div class="team-score">${team2.score}</div>
-                        <div class="team-word-count">${team2.words.length} શબ્દો</div>
-                    </div>
-                </div>
-                
-                <div class="winner-section">
-                    🏆 વિજેતા: ${winner} 🏆
-                </div>
-                
-                <div class="tables-container">
-                    <div class="team-table-section">
-                        <div class="team-table-title team1-title">ટીમ 1 ના શબ્દો</div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ક્રમ</th>
-                                    <th>શબ્દ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${team1.words.length > 0 ? team1WordsHtml : '<tr><td colspan="2" class="no-words">કોઈ શબ્દો નથી</td></tr>'}
-                            </tbody>
-                        </table>
+                <div style="padding: 20px;">
+                    <h1>શબ્દ સ્પર્ધા - પરિણામ</h1>
+                    
+                    <div class="results-summary">
+                        <div class="team-summary team1-summary">
+                            <div class="team-letter">ટીમ 1 (${team1.letter})</div>
+                            <div class="team-score">${team1.score}</div>
+                            <div class="team-word-count">${team1.words.length} શબ્દો</div>
+                        </div>
+                        <div class="team-summary team2-summary">
+                            <div class="team-letter">ટીમ 2 (${team2.letter})</div>
+                            <div class="team-score">${team2.score}</div>
+                            <div class="team-word-count">${team2.words.length} શબ્દો</div>
+                        </div>
                     </div>
                     
-                    <div class="team-table-section">
-                        <div class="team-table-title team2-title">ટીમ 2 ના શબ્દો</div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ક્રમ</th>
-                                    <th>શબ્દ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${team2.words.length > 0 ? team2WordsHtml : '<tr><td colspan="2" class="no-words">કોઈ શબ્દો નથી</td></tr>'}
-                            </tbody>
-                        </table>
+                    <div class="winner-section" style="background: linear-gradient(135deg, ${winnerColor}, ${winnerColor}dd); color: white;">
+                        🏆 વિજેતા: ${winner} 🏆
                     </div>
-                </div>
-                
-                <div class="photo-footer">
-                    <p>શબ્દ સ્પર્ધા પરિણામ - તારીખ: ${new Date().toLocaleDateString('gu-IN')}</p>
-                    <p>By - દેવ પટેલ | Mo - 6354236105</p>
+                    
+                    <div class="tables-container">
+                        <div class="team-table-section">
+                            <div class="team-table-title team1-title">ટીમ 1 ના શબ્દો</div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ક્રમ</th>
+                                        <th>શબ્દ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${team1.words.length > 0 ? team1WordsHtml : '<tr><td colspan="2" class="no-words">કોઈ શબ્દો નથી</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="team-table-section">
+                            <div class="team-table-title team2-title">ટીમ 2 ના શબ્દો</div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ક્રમ</th>
+                                        <th>શબ્દ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${team2.words.length > 0 ? team2WordsHtml : '<tr><td colspan="2" class="no-words">કોઈ શબ્દો નથી</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="photo-footer">
+                        <p>શબ્દ સ્પર્ધા પરિણામ - તારીખ: ${new Date().toLocaleDateString('gu-IN')}</p>
+                        <p>By - દેવ પટેલ | Mo - 6354236105</p>
+                    </div>
                 </div>
                 
                 <div class="photo-controls">
