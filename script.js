@@ -20,14 +20,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const speakButtons = document.querySelectorAll('.speak-btn');
     const saveBtn = document.getElementById('save-btn');
     const printBtn = document.getElementById('print-btn');
-    const clearBtn = document.getElementById('clear-btn');
+    const endBtn = document.getElementById('end-btn');
 
     // Check if buttons exist and add error handling
     if (!printBtn) {
         console.error('Print button not found!');
     }
-    if (!clearBtn) {
-        console.error('Clear button not found!');
+    if (!endBtn) {
+        console.error('End button not found!');
     }
 
     // --- Game State ---
@@ -88,14 +88,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            console.log('Clear button clicked');
+    if (endBtn) {
+        endBtn.addEventListener('click', () => {
+            console.log('End button clicked');
             try {
-                clearGame();
+                endGame();
             } catch (error) {
-                console.error('Clear error:', error);
-                alert('Clear functionality failed. Please try again.');
+                console.error('End error:', error);
+                alert('End functionality failed. Please try again.');
             }
         });
     }
@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Strict validation: word must start with the exact letter
         if (!word.startsWith(teamData.letter)) {
-            alert(`શબ્દ "${word}" એ "${teamData.letter}" થી શરૂ થતો નથી. કૃપા કરી "${teamData.letter}" થી શરૂ થતો શબ્દ બોલો.`);
+            showRejectionMessage(teamNumber, word, `શબ્દ "${word}" એ "${teamData.letter}" થી શરૂ થતો નથી`);
             return;
         }
 
@@ -244,11 +244,13 @@ document.addEventListener('DOMContentLoaded', () => {
             teamData.score--;
             li.classList.add('repeated-word');
             li.innerHTML = `${word} <span style="color: red; font-size: 0.8em;">(જૂનું)</span>`;
+            showRepeatedWordMessage(teamNumber, word);
         } else {
             // It's a new word
             teamData.score++;
             teamData.words.push(word);
             li.innerHTML = `${word} <span style="color: green; font-size: 0.8em;">(નવું)</span>`;
+            showWordAcceptedMessage(teamNumber, word);
         }
 
         // Update UI
@@ -259,15 +261,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update word count display
         updateWordCount(teamNumber);
         
-        // Show success message for new words
-        if (!teamData.words.includes(word) || teamData.words.filter(w => w === word).length === 1) {
-            showSuccessMessage(teamNumber, word);
-        }
-        
         // Switch turn after processing the word
         setTimeout(() => {
             switchTurn();
-        }, 1000);
+        }, 1500);
     }
     
     function updateWordCount(teamNumber) {
@@ -288,29 +285,128 @@ document.addEventListener('DOMContentLoaded', () => {
         countDisplay.textContent = `કુલ શબ્દો: ${uniqueWords} | સ્કોર: ${teamData.score}`;
     }
     
-    function showSuccessMessage(teamNumber, word) {
-        const teamColumn = document.getElementById(`team${teamNumber}`);
+    function showWordAcceptedMessage(teamNumber, word) {
         const message = document.createElement('div');
-        message.className = 'success-message';
-        message.textContent = `✅ "${word}" ઉમેરાયું!`;
+        message.className = 'word-accepted-message';
+        message.innerHTML = `
+            <div class="message-content">
+                <div class="checkmark">✅</div>
+                <div class="message-text">
+                    <div class="word-text">"${word}"</div>
+                    <div class="status-text">શબ્દ સ્વીકારાયું!</div>
+                </div>
+            </div>
+        `;
+        
         message.style.cssText = `
             position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #28a745;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #28a745, #20c997);
             color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
+            padding: 20px 30px;
+            border-radius: 15px;
             z-index: 1000;
-            animation: slideIn 0.5s ease;
+            box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+            animation: wordAcceptedIn 0.6s ease-out;
+            font-weight: bold;
+            font-size: 18px;
+            text-align: center;
         `;
         
         document.body.appendChild(message);
         
         setTimeout(() => {
-            message.style.animation = 'slideOut 0.5s ease';
+            message.style.animation = 'wordAcceptedOut 0.5s ease-in';
             setTimeout(() => {
-                document.body.removeChild(message);
+                if (document.body.contains(message)) {
+                    document.body.removeChild(message);
+                }
+            }, 500);
+        }, 2000);
+    }
+    
+    function showRepeatedWordMessage(teamNumber, word) {
+        const message = document.createElement('div');
+        message.className = 'repeated-word-message';
+        message.innerHTML = `
+            <div class="message-content">
+                <div class="warning">⚠️</div>
+                <div class="message-text">
+                    <div class="word-text">"${word}"</div>
+                    <div class="status-text">શબ્દ પહેલાથી છે!</div>
+                </div>
+            </div>
+        `;
+        
+        message.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(255, 193, 7, 0.3);
+            animation: repeatedWordIn 0.6s ease-out;
+            font-weight: bold;
+            font-size: 18px;
+            text-align: center;
+        `;
+        
+        document.body.appendChild(message);
+        
+        setTimeout(() => {
+            message.style.animation = 'repeatedWordOut 0.5s ease-in';
+            setTimeout(() => {
+                if (document.body.contains(message)) {
+                    document.body.removeChild(message);
+                }
+            }, 500);
+        }, 2000);
+    }
+    
+    function showRejectionMessage(teamNumber, word, reason) {
+        const message = document.createElement('div');
+        message.className = 'rejection-message';
+        message.innerHTML = `
+            <div class="message-content">
+                <div class="cross">❌</div>
+                <div class="message-text">
+                    <div class="word-text">"${word}"</div>
+                    <div class="status-text">${reason}</div>
+                </div>
+            </div>
+        `;
+        
+        message.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #dc3545, #e74c3c);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(220, 53, 69, 0.3);
+            animation: rejectionIn 0.6s ease-out;
+            font-weight: bold;
+            font-size: 18px;
+            text-align: center;
+        `;
+        
+        document.body.appendChild(message);
+        
+        setTimeout(() => {
+            message.style.animation = 'rejectionOut 0.5s ease-in';
+            setTimeout(() => {
+                if (document.body.contains(message)) {
+                    document.body.removeChild(message);
+                }
             }, 500);
         }, 2000);
     }
@@ -339,44 +435,147 @@ document.addEventListener('DOMContentLoaded', () => {
         link.click();
     }
 
-    function clearGame() {
-        console.log('clearGame function called');
-        const confirm = window.confirm("શબ્દ સ્પર્ધાને ખાલી કરવાનો નકારાયા છે? આ કાર્ય અનિવાર્ય છે.");
+    function endGame() {
+        console.log('endGame function called');
+        const confirm = window.confirm("શબ્દ સ્પર્ધા સમાપ્ત કરવાનો નકારાયા છે? આ કાર્ય અનિવાર્ય છે.");
         if (confirm) {
-            console.log('User confirmed clear action');
-            
-            // Reset team data
-            team1.score = 0;
-            team1.words = [];
-            team2.score = 0;
-            team2.words = [];
-            
-            // Update UI
-            if (score1El) score1El.textContent = '0';
-            if (score2El) score2El.textContent = '0';
-            if (wordList1El) wordList1El.innerHTML = '';
-            if (wordList2El) wordList2El.innerHTML = '';
-            
-            // Reset turn system
-            currentTurn = 1;
-            isListening = false;
-            updateTurnDisplay();
-            
-            // Remove word count displays
-            const countDisplays = document.querySelectorAll('.word-count');
-            countDisplays.forEach(display => display.remove());
-            
-            // Remove turn indicator
-            const turnIndicator = document.querySelector('.turn-indicator');
-            if (turnIndicator) {
-                turnIndicator.remove();
-            }
-            
-            console.log('Game cleared successfully');
-            alert("શબ્દ સ્પર્ધા ખાલી કરવામાં આવી છે!");
+            console.log('User confirmed end action');
+            showWinnerAnimation();
         } else {
-            console.log('User cancelled clear action');
+            console.log('User cancelled end action');
         }
+    }
+    
+    function showWinnerAnimation() {
+        // Determine winner
+        let winner = '';
+        let winnerScore = 0;
+        let winnerColor = '';
+        
+        if (team1.score > team2.score) {
+            winner = 'ટીમ 1';
+            winnerScore = team1.score;
+            winnerColor = '#ff6b6b';
+        } else if (team2.score > team1.score) {
+            winner = 'ટીમ 2';
+            winnerScore = team2.score;
+            winnerColor = '#48dbfb';
+        } else {
+            winner = 'બંને ટીમ';
+            winnerScore = team1.score;
+            winnerColor = '#feca57';
+        }
+        
+        // Create winner announcement
+        const winnerDiv = document.createElement('div');
+        winnerDiv.className = 'winner-announcement';
+        winnerDiv.innerHTML = `
+            <div class="winner-content">
+                <div class="trophy">🏆</div>
+                <div class="winner-text">
+                    <div class="winner-title">વિજેતા</div>
+                    <div class="winner-name">${winner}</div>
+                    <div class="winner-score">સ્કોર: ${winnerScore}</div>
+                </div>
+                <div class="confetti-container">
+                    <div class="confetti"></div>
+                    <div class="confetti"></div>
+                    <div class="confetti"></div>
+                    <div class="confetti"></div>
+                    <div class="confetti"></div>
+                    <div class="confetti"></div>
+                    <div class="confetti"></div>
+                    <div class="confetti"></div>
+                </div>
+            </div>
+        `;
+        
+        winnerDiv.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: winnerFadeIn 0.8s ease-out;
+        `;
+        
+        document.body.appendChild(winnerDiv);
+        
+        // Add winner content styles
+        const winnerContent = winnerDiv.querySelector('.winner-content');
+        winnerContent.style.cssText = `
+            background: linear-gradient(135deg, ${winnerColor}, ${winnerColor}dd);
+            color: white;
+            padding: 40px 60px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: winnerScaleIn 1s ease-out 0.3s both;
+            position: relative;
+            overflow: hidden;
+        `;
+        
+        // Add trophy animation
+        const trophy = winnerDiv.querySelector('.trophy');
+        trophy.style.cssText = `
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: trophyBounce 2s ease-in-out infinite;
+        `;
+        
+        // Add winner text styles
+        const winnerTitle = winnerDiv.querySelector('.winner-title');
+        winnerTitle.style.cssText = `
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        `;
+        
+        const winnerName = winnerDiv.querySelector('.winner-name');
+        winnerName.style.cssText = `
+            font-size: 48px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        `;
+        
+        const winnerScoreEl = winnerDiv.querySelector('.winner-score');
+        winnerScoreEl.style.cssText = `
+            font-size: 20px;
+            opacity: 0.9;
+        `;
+        
+        // Add confetti animation
+        const confettiElements = winnerDiv.querySelectorAll('.confetti');
+        confettiElements.forEach((confetti, index) => {
+            confetti.style.cssText = `
+                position: absolute;
+                width: 10px;
+                height: 10px;
+                background: ${['#ff6b6b', '#48dbfb', '#feca57', '#ff9ff3', '#54a0ff'][index % 5]};
+                animation: confettiFall 3s ease-in infinite;
+                animation-delay: ${index * 0.2}s;
+                top: -10px;
+                left: ${Math.random() * 100}%;
+            `;
+        });
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            winnerDiv.style.animation = 'winnerFadeOut 0.8s ease-in';
+            setTimeout(() => {
+                if (document.body.contains(winnerDiv)) {
+                    document.body.removeChild(winnerDiv);
+                }
+            }, 800);
+        }, 5000);
     }
     
     function showTotalStats() {
@@ -400,13 +599,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add visual feedback to confirm buttons are loaded
     console.log('DOM loaded successfully');
     console.log('Print button found:', !!printBtn);
-    console.log('Clear button found:', !!clearBtn);
+    console.log('End button found:', !!endBtn);
     
     // Add a simple test to verify buttons are clickable
     if (printBtn) {
         printBtn.style.border = '2px solid #28a745';
     }
-    if (clearBtn) {
-        clearBtn.style.border = '2px solid #dc3545';
+    if (endBtn) {
+        endBtn.style.border = '2px solid #dc3545';
     }
 });
