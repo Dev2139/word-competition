@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         printBtn.addEventListener('click', () => {
             console.log('Print button clicked');
             try {
-                window.print();
+                printResults();
             } catch (error) {
                 console.error('Print error:', error);
                 alert('Print functionality failed. Please try again.');
@@ -441,9 +441,97 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirm) {
             console.log('User confirmed end action');
             showWinnerAnimation();
+            // Refresh data after showing winner animation
+            setTimeout(() => {
+                refreshGameData();
+            }, 6000); // Wait for winner animation to complete (5s) + 1s buffer
         } else {
             console.log('User cancelled end action');
         }
+    }
+    
+    function refreshGameData() {
+        // Reset game state
+        team1 = {
+            score: 0,
+            words: [],
+            letter: ''
+        };
+        team2 = {
+            score: 0,
+            words: [],
+            letter: ''
+        };
+        
+        // Reset current turn
+        currentTurn = 1;
+        isListening = false;
+        
+        // Clear UI
+        score1El.textContent = '0';
+        score2El.textContent = '0';
+        wordList1El.innerHTML = '';
+        wordList2El.innerHTML = '';
+        
+        // Clear letter inputs
+        team1LetterInput.value = '';
+        team2LetterInput.value = '';
+        displayTeam1Letter.textContent = '?';
+        displayTeam2Letter.textContent = '?';
+        
+        // Remove any existing turn indicators
+        const existingIndicator = document.querySelector('.turn-indicator');
+        if (existingIndicator) {
+            existingIndicator.remove();
+        }
+        
+        // Update turn display
+        updateTurnDisplay();
+        
+        // Show refresh confirmation message
+        showRefreshMessage();
+    }
+    
+    function showRefreshMessage() {
+        const message = document.createElement('div');
+        message.className = 'refresh-message';
+        message.innerHTML = `
+            <div class="message-content">
+                <div class="refresh-icon">🔄</div>
+                <div class="message-text">
+                    <div class="refresh-title">ડેટા રિફ્રેશ થયું!</div>
+                    <div class="refresh-subtitle">નવી સ્પર્ધા શરૂ કરી શકાય છે</div>
+                </div>
+            </div>
+        `;
+        
+        message.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #17a2b8, #20c997);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(23, 162, 184, 0.3);
+            animation: refreshMessageIn 0.6s ease-out;
+            font-weight: bold;
+            font-size: 18px;
+            text-align: center;
+        `;
+        
+        document.body.appendChild(message);
+        
+        setTimeout(() => {
+            message.style.animation = 'refreshMessageOut 0.5s ease-in';
+            setTimeout(() => {
+                if (document.body.contains(message)) {
+                    document.body.removeChild(message);
+                }
+            }, 500);
+        }, 3000);
     }
     
     function showWinnerAnimation() {
@@ -591,6 +679,272 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         
         alert(statsMessage);
+    }
+
+    function printResults() {
+        try {
+            // Create a new window for printing
+            const printWindow = window.open('', '_blank');
+            
+            if (!printWindow) {
+                alert('પોપ-અપ બ્લોક કરેલું છે. કૃપા કરી પોપ-અપને મંજૂરી આપો અને ફરીથી પ્રયાસ કરો.');
+                return;
+            }
+            
+            // Determine winner for styling
+            let winner = '';
+            let winnerColor = '#feca57';
+            if (team1.score > team2.score) {
+                winner = 'ટીમ 1';
+                winnerColor = '#ff6b6b';
+            } else if (team2.score > team1.score) {
+                winner = 'ટીમ 2';
+                winnerColor = '#48dbfb';
+            } else {
+                winner = 'બંને ટીમ';
+            }
+        
+        // Create table content for both teams
+        let team1WordsHtml = '';
+        team1.words.forEach((word, index) => {
+            team1WordsHtml += `<tr><td>${index + 1}</td><td>${word}</td></tr>`;
+        });
+        
+        let team2WordsHtml = '';
+        team2.words.forEach((word, index) => {
+            team2WordsHtml += `<tr><td>${index + 1}</td><td>${word}</td></tr>`;
+        });
+        
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html lang="gu">
+            <head>
+                <meta charset="UTF-8">
+                <title>શબ્દ સ્પર્ધા - પરિણામ</title>
+                <style>
+                    body { 
+                        font-family: 'Arial', sans-serif; 
+                        padding: 20px; 
+                        margin: 0;
+                        background-color: white;
+                    }
+                    .header {
+                        text-align: center;
+                        margin-bottom: 30px;
+                        padding: 20px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border-radius: 10px;
+                    }
+                    .school-name {
+                        font-size: 24px;
+                        font-weight: bold;
+                        margin-bottom: 5px;
+                    }
+                    .school-location {
+                        font-size: 16px;
+                        opacity: 0.9;
+                    }
+                    h1 { 
+                        color: #333; 
+                        text-align: center; 
+                        margin: 20px 0;
+                        font-size: 28px;
+                    }
+                    .results-summary {
+                        display: flex;
+                        justify-content: space-around;
+                        margin-bottom: 30px;
+                        background: #f8f9fa;
+                        padding: 20px;
+                        border-radius: 10px;
+                        border: 2px solid #e9ecef;
+                    }
+                    .team-summary {
+                        text-align: center;
+                        padding: 15px;
+                        border-radius: 8px;
+                        min-width: 200px;
+                    }
+                    .team1-summary {
+                        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+                        color: white;
+                    }
+                    .team2-summary {
+                        background: linear-gradient(135deg, #48dbfb, #6ee7ff);
+                        color: white;
+                    }
+                    .team-letter {
+                        font-size: 24px;
+                        font-weight: bold;
+                        margin-bottom: 10px;
+                    }
+                    .team-score {
+                        font-size: 32px;
+                        font-weight: bold;
+                        margin-bottom: 5px;
+                    }
+                    .team-word-count {
+                        font-size: 14px;
+                        opacity: 0.9;
+                    }
+                    .winner-section {
+                        text-align: center;
+                        margin: 20px 0;
+                        padding: 20px;
+                        background: linear-gradient(135deg, ${winnerColor}, ${winnerColor}dd);
+                        color: white;
+                        border-radius: 10px;
+                        font-size: 20px;
+                        font-weight: bold;
+                    }
+                    .tables-container {
+                        display: flex;
+                        gap: 30px;
+                        margin-top: 30px;
+                    }
+                    .team-table-section {
+                        flex: 1;
+                    }
+                    .team-table-title {
+                        text-align: center;
+                        font-size: 20px;
+                        font-weight: bold;
+                        margin-bottom: 15px;
+                        padding: 10px;
+                        border-radius: 5px;
+                    }
+                    .team1-title {
+                        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+                        color: white;
+                    }
+                    .team2-title {
+                        background: linear-gradient(135deg, #48dbfb, #6ee7ff);
+                        color: white;
+                    }
+                    table { 
+                        border-collapse: collapse; 
+                        width: 100%; 
+                        margin-bottom: 20px;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                    }
+                    th, td { 
+                        border: 1px solid #ddd; 
+                        padding: 12px 8px; 
+                        text-align: left; 
+                    }
+                    th { 
+                        background-color: #f2f2f2; 
+                        color: #333;
+                        font-weight: bold;
+                        text-align: center;
+                    }
+                    tr:nth-child(even) { 
+                        background-color: #f9f9f9; 
+                    }
+                    tr:hover {
+                        background-color: #f0f0f0;
+                    }
+                    .no-words {
+                        text-align: center;
+                        color: #666;
+                        font-style: italic;
+                        padding: 20px;
+                    }
+                    .footer {
+                        margin-top: 30px;
+                        text-align: center;
+                        padding: 15px;
+                        background: #f8f9fa;
+                        border-radius: 5px;
+                        font-size: 12px;
+                        color: #666;
+                    }
+                    @media print {
+                        body { margin: 0; }
+                        .header, .results-summary, .winner-section, .tables-container { 
+                            page-break-inside: avoid; 
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div class="school-name">જડિયાણા પ્રાથમિક શાળા</div>
+                    <div class="school-location">તા/જી - છોટાઉદેપુર</div>
+                </div>
+                
+                <h1>શબ્દ સ્પર્ધા - પરિણામ</h1>
+                
+                <div class="results-summary">
+                    <div class="team-summary team1-summary">
+                        <div class="team-letter">ટીમ 1 (${team1.letter})</div>
+                        <div class="team-score">${team1.score}</div>
+                        <div class="team-word-count">${team1.words.length} શબ્દો</div>
+                    </div>
+                    <div class="team-summary team2-summary">
+                        <div class="team-letter">ટીમ 2 (${team2.letter})</div>
+                        <div class="team-score">${team2.score}</div>
+                        <div class="team-word-count">${team2.words.length} શબ્દો</div>
+                    </div>
+                </div>
+                
+                <div class="winner-section">
+                    🏆 વિજેતા: ${winner} 🏆
+                </div>
+                
+                <div class="tables-container">
+                    <div class="team-table-section">
+                        <div class="team-table-title team1-title">ટીમ 1 ના શબ્દો</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ક્રમ</th>
+                                    <th>શબ્દ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${team1.words.length > 0 ? team1WordsHtml : '<tr><td colspan="2" class="no-words">કોઈ શબ્દો નથી</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="team-table-section">
+                        <div class="team-table-title team2-title">ટીમ 2 ના શબ્દો</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ક્રમ</th>
+                                    <th>શબ્દ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${team2.words.length > 0 ? team2WordsHtml : '<tr><td colspan="2" class="no-words">કોઈ શબ્દો નથી</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="footer">
+                    <p>શબ્દ સ્પર્ધા પરિણામ - તારીખ: ${new Date().toLocaleDateString('gu-IN')}</p>
+                    <p>By - દેવ પટેલ | Mo - 6354236105</p>
+                </div>
+            </body>
+            </html>
+        `);
+        
+        printWindow.document.close();
+        printWindow.focus();
+        
+        // Wait a bit for content to load, then print
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 500);
+        } catch (error) {
+            console.error('Print error:', error);
+            alert('પ્રિન્ટ કરવામાં ભૂલ આવી. કૃપા કરી ફરીથી પ્રયાસ કરો.');
+        }
     }
 
     // Initialize turn display
