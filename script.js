@@ -58,10 +58,12 @@ document.addEventListener('DOMContentLoaded', () => {
     team1LetterInput.addEventListener('input', () => {
         team1.letter = team1LetterInput.value;
         displayTeam1Letter.textContent = team1.letter || '?';
+        updateTurnDisplay(); // Update turn display when letter changes
     });
     team2LetterInput.addEventListener('input', () => {
         team2.letter = team2LetterInput.value;
         displayTeam2Letter.textContent = team2.letter || '?';
+        updateTurnDisplay(); // Update turn display when letter changes
     });
     
     // Add click listener to both "Speak" buttons
@@ -76,6 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
         saveBtn.addEventListener('click', saveResults);
     }
     
+    // Photo functionality commented out for now
+    /*
     if (photoBtn) {
         photoBtn.addEventListener('click', () => {
             console.log('Photo button clicked');
@@ -87,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    */
     
     if (endBtn) {
         endBtn.addEventListener('click', () => {
@@ -115,24 +120,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const team1Button = document.querySelector('.speak-btn[data-team="1"]');
         const team2Button = document.querySelector('.speak-btn[data-team="2"]');
         
+        // Check if both teams have letters set
+        const bothLettersSet = team1.letter && team2.letter;
+        
         if (currentTurn === 1) {
-            team1Button.disabled = isListening;
+            team1Button.disabled = isListening || !bothLettersSet;
             team2Button.disabled = true;
-            team1Button.style.opacity = isListening ? '0.7' : '1';
+            team1Button.style.opacity = isListening ? '0.7' : (bothLettersSet ? '1' : '0.5');
             team2Button.style.opacity = '0.5';
-            team1Button.style.cursor = isListening ? 'not-allowed' : 'pointer';
+            team1Button.style.cursor = isListening ? 'not-allowed' : (bothLettersSet ? 'pointer' : 'not-allowed');
             team2Button.style.cursor = 'not-allowed';
         } else {
             team1Button.disabled = true;
-            team2Button.disabled = isListening;
+            team2Button.disabled = isListening || !bothLettersSet;
             team1Button.style.opacity = '0.5';
-            team2Button.style.opacity = isListening ? '0.7' : '1';
+            team2Button.style.opacity = isListening ? '0.7' : (bothLettersSet ? '1' : '0.5');
             team1Button.style.cursor = 'not-allowed';
-            team2Button.style.cursor = isListening ? 'not-allowed' : 'pointer';
+            team2Button.style.cursor = isListening ? 'not-allowed' : (bothLettersSet ? 'pointer' : 'not-allowed');
         }
         
-        // Update turn indicator
-        updateTurnIndicator();
+        // Update turn indicator only if both letters are set
+        if (bothLettersSet) {
+            updateTurnIndicator();
+        } else {
+            // Remove turn indicator if letters are not set
+            const existingIndicator = document.querySelector('.turn-indicator');
+            if (existingIndicator) {
+                existingIndicator.remove();
+            }
+        }
     }
 
     function updateTurnIndicator() {
@@ -596,7 +612,11 @@ document.addEventListener('DOMContentLoaded', () => {
             existingIndicator.remove();
         }
         
-        // Update turn display
+        // Remove word count displays
+        const wordCountDisplays = document.querySelectorAll('.word-count');
+        wordCountDisplays.forEach(display => display.remove());
+        
+        // Update turn display (but don't show indicator until letters are set)
         updateTurnDisplay();
         
         // Show refresh confirmation message
@@ -792,6 +812,8 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(statsMessage);
     }
 
+    // Photo functionality commented out for now
+    /*
     function takePhoto() {
         try {
             // Create a modal overlay for the photo
@@ -970,8 +992,9 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('ફોટો બનાવવામાં ભૂલ આવી. કૃપા કરી ફરીથી પ્રયાસ કરો.');
         }
     }
+    */
 
-    // Initialize turn display
+    // Initialize turn display (but don't show indicator until letters are set)
     updateTurnDisplay();
     
     // Add visual feedback to confirm buttons are loaded
