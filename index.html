@@ -1,71 +1,125 @@
 <!DOCTYPE html>
 <html lang="gu">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>શબ્દ સ્પર્ધા</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="icon.png">
+  <title>શબ્દ સ્પર્ધા</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 </head>
 <body>
 
-    <div class="main-container">
-        <div class="school-info" style="text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); position: relative;">
-            <h2 style="font-size: 32px; margin: 0 0 10px 0; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">જડિયાણા પ્રાથમિક શાળા</h2>
-            <p style="font-size: 18px; margin: 0; opacity: 0.9; font-weight: 500;">તા/જી - છોટાઉદેપુર</p>
-            <div style="position: absolute; bottom: 10px; right: 15px; text-align: right; font-size: 14px; opacity: 0.8;">
-                <p style="margin: 0 0 2px 0; font-weight: bold;">By - દેવ પટેલ</p>
-                <p style="margin: 0; font-size: 12px;">Mo - 6354236105</p>
-            </div>
-        </div>
-        
-        <h1>શબ્દ સ્પર્ધા (Word Competition)</h1>
-        
-        <h3 class="fun-heading" style="text-align: center; background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3); background-size: 300% 300%; animation: gradientShift 3s ease infinite; color: white; padding: 15px 25px; border-radius: 25px; margin: 20px 0; font-size: 20px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); box-shadow: 0 6px 20px rgba(0,0,0,0.2);">ચાલ ભાઈબંધ શબ્દ ભંડોળ ચેક કરીએ 🙋‍♂ 👫</h3>
-
-        <div class="setup-area">
-            <div class="team-setup">
-                <label for="team1-letter">ટીમ 1 માટે અક્ષર:</label>
-                <input type="text" id="team1-letter" maxlength="1" placeholder="ક">
-            </div>
-            <div class="team-setup">
-                <label for="team2-letter">ટીમ 2 માટે અક્ષર:</label>
-                <input type="text" id="team2-letter" maxlength="1" placeholder="મ">
-            </div>
-        </div>
-
-        <div class="competition-area">
-            <div class="team-column" id="team1">
-                <h2>ટીમ 1</h2>
-                <p>શરૂ થતો અક્ષર: <span id="display-team1-letter">?</span></p>
-                <h3>સ્કોર: <span id="score1">0</span></h3>
-                <button class="speak-btn" data-team="1">શબ્દ બોલો</button>
-                <ul id="word-list1"></ul>
-            </div>
-
-            <div class="team-column" id="team2">
-                <h2>ટીમ 2</h2>
-                <p>શરૂ થતો અક્ષર: <span id="display-team2-letter">?</span></p>
-                <h3>સ્કોર: <span id="score2">0</span></h3>
-                <button class="speak-btn" data-team="2">શબ્દ બોલો</button>
-                <ul id="word-list2"></ul>
-            </div>
-        </div>
-
-        <div class="controls">
-            <!-- <button id="save-btn">યાદી સાચવો (Save List)</button> -->
-            <button id="end-btn">સ્પર્ધા સમાપ્ત કરો (End Game)</button>
-            <button id="photo-btn">ફોટો લો (Take Photo)</button>
-        </div>
+  <div class="main-container">
+    <div
+      class="school-info"
+      style="text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); position: relative;"
+    >
+      <h2
+        style="font-size: 32px; margin: 0 0 10px 0; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);"
+      >
+        જડિયાણા પ્રાથમિક શાળા
+      </h2>
+      <p style="font-size: 18px; margin: 0; opacity: 0.9; font-weight: 500;">
+        તા/જી - છોટાઉદેપુર
+      </p>
+      <div
+        style="position: absolute; bottom: 10px; right: 15px; text-align: right; font-size: 14px; opacity: 0.8;"
+      >
+        <p style="margin: 0 0 2px 0; font-weight: bold;">By - દેવ પટેલ</p>
+        <p style="margin: 0; font-size: 12px;">Mo - 6354236105</p>
+      </div>
     </div>
 
-    <script src="script.js"></script>
+    <h1>શબ્દ સ્પર્ધા (Word Competition)</h1>
+
+    <div id="game-mode-selection" style="margin-bottom: 20px;">
+      <button id="single-player-btn" class="controls button" style="background-color: #007bff; margin: 5px;">Single Device Mode</button>
+      <button id="multiplayer-btn" class="controls button" style="background-color: #28a745; margin: 5px;">Multiple Device Mode</button>
+    </div>
+
+    <div id="room-setup" style="display: none; margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px;">
+      <input type="text" id="room-id" placeholder="Enter Room Code" style="font-size: 1em; padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+      <button id="join-room-btn" class="controls button" style="margin-left: 10px; background-color: #007bff;">Join Game</button>
+      <button id="create-room-btn" class="controls button" style="margin-left: 10px; background-color: #28a745;">Create New Game</button>
+    </div>
+    
+    <div id="room-info" style="display: flex; align-items: center; justify-content: center; margin-top: 10px; min-height: 2.5em;">
+        <p id="room-message" style="margin: 0; font-weight: bold; color: #0056b3; font-size: 1.2em;"></p>
+        <button id="copy-room-btn" style="display: none; margin-left: 10px; padding: 5px 10px; background-color: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s;">
+          Copy
+        </button>
+    </div>
+
+
+    <div id="game-container" style="display: none;">
+      <h3
+        class="fun-heading"
+        style="text-align: center; background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3); background-size: 300% 300%; animation: gradientShift 3s ease infinite; color: white; padding: 15px 25px; border-radius: 25px; margin: 20px 0; font-size: 20px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); box-shadow: 0 6px 20px rgba(0,0,0,0.2);"
+      >
+        ચાલ ભાઈબંધ શબ્દ ભંડોળ ચેક કરીએ 🙋‍♂ 👫
+      </h3>
+
+      <div class="setup-area">
+        <div class="team-setup">
+          <label for="team1-letter">ટીમ 1 માટે અક્ષર:</label>
+          <input type="text" id="team1-letter" maxlength="2" placeholder="કા" />
+        </div>
+        <div class="team-setup">
+          <label for="team2-letter">ટીમ 2 માટે અક્ષર:</label>
+          <input type="text" id="team2-letter" maxlength="2" placeholder="કી" />
+        </div>
+      </div>
+
+      <div class="competition-area">
+        <div class="team-column" id="team1">
+          <h2>ટીમ 1</h2>
+          <p>શરૂ થતો અક્ષર: <span id="display-team1-letter">?</span></p>
+          <h3>સ્કોર: <span id="score1">0</span></h3>
+          <button class="speak-btn" data-team="1">શબ્દ બોલો</button>
+          <ul id="word-list1"></ul>
+        </div>
+
+        <div class="team-column" id="team2">
+          <h2>ટીમ 2</h2>
+          <p>શરૂ થતો અક્ષર: <span id="display-team2-letter">?</span></p>
+          <h3>સ્કોર: <span id="score2">0</span></h3>
+          <button class="speak-btn" data-team="2">શબ્દ બોલો</button>
+          <ul id="word-list2"></ul>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="end-btn">સ્પર્ધા સમાપ્ત કરો (End Game)</button>
+        <button id="print-btn">પ્રિન્ટ કરો (Print Words)</button>
+        <a href="https://shabda-antakshari.netlify.app/" target="_blank">
+          <button id="print-btn">શબ્દ અંતાક્ષરી(shabda-antakshari)</button>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div id="winner-modal" class="modal">
+    <div class="modal-content">
+      <div class="confetti-container" id="confetti-container"></div>
+      <div class="winner-announcement">
+        <h2>🎉 વિજેતા જાહેર! 🎉</h2>
+        <div class="winner-team" id="winner-team"></div>
+        <div class="final-scores">
+          <div class="score-display">
+            <span class="team-name">ટીમ 1:</span>
+            <span class="score" id="final-score1">0</span>
+          </div>
+          <div class="score-display">
+            <span class="team-name">ટીમ 2:</span>
+            <span class="score" id="final-score2">0</span>
+          </div>
+        </div>
+        <button onclick="location.reload()">ફરી રમો</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
