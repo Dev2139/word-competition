@@ -2,16 +2,25 @@ const express = require('express');
 const http = require('http');
 const { Server } = require("socket.io");
 const path = require('path');
+const cors = require('cors'); // <-- 1. THE FIX: Import cors
 
 const app = express();
+app.use(cors()); // <-- 2. THE FIX: Tell Express to use cors
+
 const server = http.createServer(app);
-const io = new Server(server);
+
+// 3. THE FIX: Tell Socket.io to allow all origins
+const io = new Server(server, {
+  cors: {
+    origin: "*", // This allows connections from ANY website
+    methods: ["GET", "POST"]
+  }
+});
 
 // Serve your static files (index.html, script.js, style.css)
 app.use(express.static(path.join(__dirname, '')));
 
-// Store game states. In a real app, you'd use a database.
-// games = { 'room123': { team1: {...}, team2: {...}, currentTurn: 1 } }
+// Store game states
 const games = {};
 
 // Handle client connection
@@ -20,10 +29,10 @@ io.on('connection', (socket) => {
 
   // User wants to create a new room
   socket.on('createRoom', () => {
-    console.log('SERVER: Received "createRoom" event from a client.'); // <-- CHECKPOINT
-    const roomID = Math.random().toString(36).substring(2, 7); // Generate a random 5-char ID
+    console.log('SERVER: Received "createRoom" event from a client.');
+    const roomID = Math.random().toString(36).substring(2, 7); 
     socket.join(roomID);
-    console.log('SERVER: Sending "roomCreated" event back with ID:', roomID); // <-- CHECKPOINT
+    console.log('SERVER: Sending "roomCreated" event back with ID:', roomID);
     
     // Initialize game state
     games[roomID] = {
@@ -42,9 +51,7 @@ io.on('connection', (socket) => {
       return;
     }
     socket.join(roomID);
-    // Send the current game state to the user who just joined
     socket.emit('gameStateUpdate', games[roomID]);
-    // Tell everyone in the room (except the sender) that a user joined
     socket.to(roomID).emit('userJoined', 'A new user has joined the room.');
   });
 
@@ -54,8 +61,6 @@ io.on('connection', (socket) => {
     if (games[roomID]) {
       games[roomID].team1.letter = team1Letter;
       games[roomID].team2.letter = team2Letter;
-      
-      // Broadcast the new state (with letters) to everyone in the room
       io.to(roomID).emit('gameStateUpdate', games[roomID]);
     }
   });
@@ -65,9 +70,8 @@ io.on('connection', (socket) => {
     const { roomID, word, teamNumber } = data;
     const game = games[roomID];
 
-    if (!game) return; // Game doesn't exist
+    if (!game) return; 
 
-    // --- All your validation logic now moves to the server ---
     const teamData = (teamNumber === "1") ? game.team1 : game.team2;
     const otherTeamData = (teamNumber === "1") ? game.team2 : game.team1;
 
@@ -75,7 +79,6 @@ io.on('connection', (socket) => {
     let messageType = "success";
 
     if (parseInt(teamNumber) !== game.currentTurn) {
-        // Not their turn - this shouldn't happen if UI is correct, but good to check
         return; 
     }
 
@@ -94,17 +97,13 @@ io.on('connection', (socket) => {
       messageType = "success";
     }
 
-    // Switch turn
     game.currentTurn = (game.currentTurn === 1) ? 2 : 1;
-
-    // Broadcast the new game state and the message to EVERYONE in the room
     io.to(roomID).emit('gameStateUpdate', game);
     io.to(roomID).emit('showMessage', { msg: message, type: messageType });
   });
 
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
-    // You could add logic here to remove users from rooms
   });
 });
 
