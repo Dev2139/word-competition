@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Socket.io Connection & Events ---
   function connectSocket() {
-    socket = io(); // Connects to the server that served the page
+    socket = io("https://word-competition-server.onrender.com"); // Connects to the server that served the page
 
     createRoomBtn.addEventListener("click", () => {
       console.log("CLIENT: 'Create Room' button clicked. Sending 'createRoom' to server..."); 
